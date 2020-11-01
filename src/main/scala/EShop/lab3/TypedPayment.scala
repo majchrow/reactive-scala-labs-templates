@@ -18,6 +18,18 @@ class TypedPayment(
 
   import TypedPayment._
 
-  def start: Behavior[TypedPayment.Command] = ???
+  def start: Behavior[TypedPayment.Command] = {
+    Behaviors.receive(
+      (context, msg) =>
+        msg match {
+          case DoPayment =>
+            print("DoPayment - Payment\n")
+            orderManager ! TypedOrderManager.ConfirmPaymentReceived
+            checkout ! TypedCheckout.ConfirmPaymentReceived
+            Behaviors.same
+          case _ => Behaviors.same
+        }
+    )
+  }
 
 }
