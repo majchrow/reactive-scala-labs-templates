@@ -1,5 +1,6 @@
 package EShop.lab3
 
+import EShop.lab3.TypedOrderManager.Pay
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Scheduler}
 import akka.util.Timeout
@@ -35,6 +36,7 @@ object TypedMain {
         tom.ask[Any](TypedOrderManager.AddItem("item", _))
         tom.ask[Any](TypedOrderManager.Buy)
         tom.ask[Any](TypedOrderManager.SelectDeliveryAndPaymentMethod("paypal", "inpost", _))
+        tom.ask[Any](TypedOrderManager.Pay)
 
         Behaviors.same
       case _ => Behaviors.same

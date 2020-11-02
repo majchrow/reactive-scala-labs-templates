@@ -8,11 +8,14 @@ object TypedPayment {
 
   sealed trait Command
   case object DoPayment extends Command
+
+  sealed trait Event
+  case object PaymentReceived extends Event
 }
 
 class TypedPayment(
   method: String,
-  orderManager: ActorRef[TypedOrderManager.Command],
+  orderManager: ActorRef[Any],
   checkout: ActorRef[TypedCheckout.Command]
 ) {
 
@@ -24,7 +27,7 @@ class TypedPayment(
         msg match {
           case DoPayment =>
             print("DoPayment - Payment\n")
-            orderManager ! TypedOrderManager.ConfirmPaymentReceived
+            orderManager ! PaymentReceived
             checkout ! TypedCheckout.ConfirmPaymentReceived
             Behaviors.same
           case _ => Behaviors.same

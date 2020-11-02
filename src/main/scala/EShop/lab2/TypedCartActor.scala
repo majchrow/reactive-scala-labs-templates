@@ -18,7 +18,7 @@ object TypedCartActor {
 
   case object ExpireCart extends Command
 
-  case class StartCheckout(orderManagerRef: ActorRef[TypedOrderManager.Command]) extends Command
+  case class StartCheckout(orderManagerRef: ActorRef[Event]) extends Command
 
   case object ConfirmCheckoutCancelled extends Command
 
@@ -76,12 +76,12 @@ class TypedCartActor {
           }
         case ExpireCart =>
           empty
-        case StartCheckout(orderManagerRef: ActorRef[TypedOrderManager]) =>
+        case StartCheckout(orderManagerRef: ActorRef[Event]) =>
           print("Start Checkout - Cart Actor\n")
           if (cart.size > 0) {
             val spawned = context.spawn((new TypedCheckout(context.self)).start, "spawnedCheckout")
             spawned ! TypedCheckout.StartCheckout
-            orderManagerRef ! TypedOrderManager.ConfirmCheckoutStarted(spawned)
+            orderManagerRef ! CheckoutStarted(spawned)
             inCheckout(cart)
           }
           else
