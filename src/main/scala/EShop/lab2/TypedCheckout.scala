@@ -1,5 +1,6 @@
 package EShop.lab2
 
+import EShop.lab3.{TypedOrderManager, TypedPayment}
 import akka.actor.Cancellable
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
@@ -19,6 +20,7 @@ object TypedCheckout {
 
   sealed trait Command
 
+
   case object StartCheckout extends Command
 
   case class SelectDeliveryMethod(method: String) extends Command
@@ -27,7 +29,7 @@ object TypedCheckout {
 
   case object ExpireCheckout extends Command
 
-  case class SelectPayment(payment: String) extends Command
+  case class SelectPayment(payment: String, orderManagerRef: ActorRef[TypedOrderManager.Command]) extends Command
 
   case object ExpirePayment extends Command
 
@@ -37,11 +39,13 @@ object TypedCheckout {
 
   case object CheckOutClosed extends Event
 
-  case class PaymentStarted(payment: ActorRef[Any]) extends Event
+  case class PaymentStarted(paymentRef: ActorRef[Any]) extends Event
 
 }
 
-class TypedCheckout {
+class TypedCheckout(
+                     cartActor: ActorRef[TypedCartActor.Command]
+                   ) {
 
   import TypedCheckout._
 
@@ -67,7 +71,12 @@ class TypedCheckout {
     (context, message) =>
       message match {
         case CancelCheckout | ExpireCheckout => cancelled
-        case SelectDeliveryMethod(method: String) => selectingPaymentMethod(timer)
+        case SelectDeliveryMethod(method: String) =>
+          print("Select DeliveryMethod - Checkout\n")
+          selectingPaymentMethod(timer)
+        case SelectPayment(payment: String, orderManagerRef: TypedOrderManager.Command) =>
+          context.self ! SelectPayment(payment, orderManagerRef)
+          Behaviors.same
         case _ => Behaviors.same
       }
   }
@@ -76,8 +85,14 @@ class TypedCheckout {
     (context, message) =>
       message match {
         case CancelCheckout | ExpireCheckout => cancelled
-        case SelectPayment(payment: String) => processingPayment(scheduleTimerPayment(context))
-        case _ => Behaviors.same
+        case SelectPayment(payment: String, orderManagerRef: ActorRef[TypedOrderManager]) =>
+          print("Select Payment - Checkout\n")
+          val spawned = context.spawn((new TypedPayment(payment, orderManagerRef, context.self)).start, "spawnedPayment")
+          orderManagerRef ! TypedOrderManager.ConfirmPaymentStarted(spawned)
+          timer.cancel()
+          processingPayment(scheduleTimerPayment(context))
+        case _ =>
+          Behaviors.same
       }
   }
 
@@ -85,7 +100,11 @@ class TypedCheckout {
     (context, message) =>
       message match {
         case CancelCheckout | ExpirePayment => cancelled
-        case ConfirmPaymentReceived => closed
+        case ConfirmPaymentReceived =>
+          print("ConfirmPaymentReceived - Checkout\n")
+          cartActor ! TypedCartActor.ConfirmCheckoutClosed
+          timer.cancel()
+          closed
         case _ => Behaviors.same
       }
   }

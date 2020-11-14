@@ -18,7 +18,7 @@ object ApplicationMain extends App {
   cartActor ! CartActor.StartCheckout
   cartActor ! CartActor.ConfirmCheckoutClosed
 
-  private val checkoutActor = system.actorOf(Props[Checkout], "checkoutActor")
+  private val checkoutActor = system.actorOf(Checkout.props(cartActor), "checkoutActor")
 
   checkoutActor ! Checkout.StartCheckout
   checkoutActor ! Checkout.CancelCheckout
