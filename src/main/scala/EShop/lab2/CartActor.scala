@@ -27,7 +27,20 @@ object CartActor {
 
   sealed trait Event
 
-  case class CheckoutStarted(checkoutRef: ActorRef) extends Event
+  case class CheckoutStarted(checkoutRef: ActorRef, cart: Cart) extends Event
+
+  case class ItemAdded(itemId: Any, cart: Cart) extends Event
+
+  case class ItemRemoved(itemId: Any, cart: Cart) extends Event
+
+  case object CartEmptied extends Event
+
+  case object CartExpired extends Event
+
+  case object CheckoutClosed extends Event
+
+  case class CheckoutCancelled(cart: Cart) extends Event
+
 
   def props() = Props(new CartActor())
 }
@@ -39,6 +52,7 @@ class CartActor extends Actor {
   private val log = Logging(context.system, this)
   val cartTimerDuration: FiniteDuration = 5 seconds
   private val scheduler = context.system.scheduler
+
 
   // https://doc.akka.io/docs/akka/current/scheduler.html
   private def scheduleTimer: Cancellable = scheduler.scheduleOnce(cartTimerDuration, self, ExpireCart)

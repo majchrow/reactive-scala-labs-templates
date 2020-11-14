@@ -17,11 +17,26 @@ object Checkout {
 
   case class ProcessingPaymentStarted(timer: Cancellable) extends Data
 
+
   sealed trait Command
 
   case object StartCheckout extends Command
 
   case class SelectDeliveryMethod(method: String) extends Command
+
+
+  sealed trait Event
+
+  case object CheckOutClosed extends Event
+
+  case class PaymentStarted(payment: ActorRef) extends Event
+
+  case object CheckoutStarted extends Event
+
+  case object CheckoutCancelled extends Event
+
+  case class DeliveryMethodSelected(method: String) extends Event
+
 
   case object CancelCheckout extends Command
 
@@ -33,18 +48,13 @@ object Checkout {
 
   case object ConfirmPaymentReceived extends Command
 
-  sealed trait Event
-
-  case object CheckOutClosed extends Event
-
-  case class PaymentStarted(payment: ActorRef) extends Event
 
   def props(cart: ActorRef) = Props(new Checkout(cart))
 }
 
 class Checkout(
-  cartActor: ActorRef
-) extends Actor {
+                cartActor: ActorRef
+              ) extends Actor {
 
   import Checkout._
 

@@ -16,6 +16,7 @@ class TypedCheckoutTest
     with Matchers
     with ScalaFutures {
 
+
   override def afterAll: Unit =
     testKit.shutdownTestKit()
 
@@ -53,6 +54,7 @@ class TypedCheckoutTest
     checkoutActor ! TypedCheckout.SelectPayment("payment", tom)
     checkoutActor ! TypedCheckout.ConfirmPaymentReceived
     probe.expectMessage("confirmed")
+
   }
 
 }

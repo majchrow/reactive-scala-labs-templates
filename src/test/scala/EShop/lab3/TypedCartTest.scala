@@ -1,7 +1,6 @@
 package EShop.lab3
 
 import EShop.lab2.{Cart, TypedCartActor}
-import akka.actor.Cancellable
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit, ScalaTestWithActorTestKit, TestInbox}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}

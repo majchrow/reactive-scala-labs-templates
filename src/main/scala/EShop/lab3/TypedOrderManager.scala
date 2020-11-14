@@ -26,6 +26,7 @@ object TypedOrderManager {
 
   sealed trait Ack
 
+
   case object Done extends Ack //trivial ACK
 }
 
