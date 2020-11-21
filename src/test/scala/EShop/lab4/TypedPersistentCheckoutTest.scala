@@ -6,17 +6,17 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit
 import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit.SerializationSettings
 import akka.persistence.typed.PersistenceId
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.concurrent.duration._
 import scala.util.Random
 
 class TypedPersistentCheckoutTest
   extends ScalaTestWithActorTestKit(EventSourcedBehaviorTestKit.config)
-  with AnyFlatSpecLike
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach {
+    with AnyFlatSpecLike
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach {
 
   override def afterAll: Unit = testKit.shutdownTestKit()
 
@@ -41,7 +41,7 @@ class TypedPersistentCheckoutTest
   }
 
   val deliveryMethod = "post"
-  val paymentMethod  = "paypal"
+  val paymentMethod = "paypal"
 
   def generatePersistenceId: PersistenceId = PersistenceId.ofUniqueId(Random.alphanumeric.take(256).mkString)
 
@@ -236,5 +236,24 @@ class TypedPersistentCheckoutTest
 
     resultCancelCheckout.hasNoEvents shouldBe true
     resultCancelCheckout.state shouldBe Closed
+  }
+
+  it should "restart properly and be in cancelled state after expire checkout timeout in selectingDelivery state" in {
+    val resultStartCheckout = eventSourcedTestKit.runCommand(StartCheckout)
+
+    resultStartCheckout.event shouldBe CheckoutStarted
+    resultStartCheckout.state.isInstanceOf[SelectingDelivery] shouldBe true
+
+    eventSourcedTestKit.restart()
+
+    resultStartCheckout.event shouldBe CheckoutStarted
+    resultStartCheckout.state.isInstanceOf[SelectingDelivery] shouldBe true
+
+    Thread.sleep(2000)
+
+    val resultSelectDelivery = eventSourcedTestKit.runCommand(SelectDeliveryMethod(deliveryMethod))
+
+    resultSelectDelivery.hasNoEvents shouldBe true
+    resultSelectDelivery.state shouldBe Cancelled
   }
 }

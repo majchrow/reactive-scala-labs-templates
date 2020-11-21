@@ -64,7 +64,7 @@ object TypedCheckout {
 
 }
 
-class TypedCheckout(
+class   TypedCheckout(
                      cartActor: ActorRef[TypedCartActor.Command]
                    ) {
 

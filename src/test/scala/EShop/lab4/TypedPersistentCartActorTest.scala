@@ -3,19 +3,19 @@ package EShop.lab4
 import EShop.lab3.TypedOrderManager
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit
+import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit.SerializationSettings
 import akka.persistence.typed.PersistenceId
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit.SerializationSettings
 
 import scala.concurrent.duration._
 import scala.util.Random
 
 class TypedPersistentCartActorTest
   extends ScalaTestWithActorTestKit(EventSourcedBehaviorTestKit.config)
-  with AnyFlatSpecLike
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach {
+    with AnyFlatSpecLike
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach {
 
   override def afterAll: Unit = testKit.shutdownTestKit()
 
@@ -147,6 +147,54 @@ class TypedPersistentCartActorTest
 
   it should "expire and back to empty state after given time" in {
     val resultAdd = eventSourcedTestKit.runCommand(AddItem("King Lear"))
+
+    resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
+    resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
+
+    Thread.sleep(1500)
+
+    val resultAdd2 = eventSourcedTestKit.runCommand(RemoveItem("King Lear"))
+
+    resultAdd2.hasNoEvents shouldBe true
+    resultAdd2.state shouldBe Empty
+  }
+
+  it should "restart properly from NonEmpty state" in {
+    val resultAdd = eventSourcedTestKit.runCommand(AddItem("King Lear"))
+
+    resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
+    resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
+
+    eventSourcedTestKit.restart()
+
+    resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
+    resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
+  }
+
+  it should "restart properly from Empty state" in {
+    val resultAdd = eventSourcedTestKit.runCommand(AddItem("Romeo & Juliet"))
+
+    resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
+    resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
+
+    val resultRemove = eventSourcedTestKit.runCommand(RemoveItem("Romeo & Juliet"))
+
+    resultRemove.event shouldBe CartEmptied
+    resultRemove.state shouldBe Empty
+
+    eventSourcedTestKit.restart()
+
+    resultRemove.event shouldBe CartEmptied
+    resultRemove.state shouldBe Empty
+  }
+
+  it should "restart properly from NonEmpty state and expire" in {
+    val resultAdd = eventSourcedTestKit.runCommand(AddItem("King Lear"))
+
+    resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
+    resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
+
+    eventSourcedTestKit.restart()
 
     resultAdd.event.isInstanceOf[ItemAdded] shouldBe true
     resultAdd.state.isInstanceOf[NonEmpty] shouldBe true
