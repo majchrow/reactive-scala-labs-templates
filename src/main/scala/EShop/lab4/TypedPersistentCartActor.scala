@@ -94,6 +94,7 @@ class TypedPersistentCartActor {
       case CheckoutCancelled =>
         timer.cancel()
         NonEmpty(state.cart, timer)
+
     }
   }
 

@@ -1,23 +1,29 @@
 package EShop.lab3
 
-import EShop.lab2.{CartActor, Checkout}
-import EShop.lab3.OrderManager._
 import akka.actor.{Actor, ActorRef}
-import akka.event.LoggingReceive
 
 object OrderManager {
 
   sealed trait Command
-  case class AddItem(id: String)                                               extends Command
-  case class RemoveItem(id: String)                                            extends Command
+
+  case class AddItem(id: String) extends Command
+
+  case class RemoveItem(id: String) extends Command
+
   case class SelectDeliveryAndPaymentMethod(delivery: String, payment: String) extends Command
-  case object Buy                                                              extends Command
-  case object Pay                                                              extends Command
-  case class ConfirmCheckoutStarted(checkoutRef: ActorRef)                     extends Command
-  case class ConfirmPaymentStarted(paymentRef: ActorRef)                       extends Command
-  case object ConfirmPaymentReceived                                           extends Command
+
+  case object Buy extends Command
+
+  case object Pay extends Command
+
+  case class ConfirmCheckoutStarted(checkoutRef: ActorRef) extends Command
+
+  case class ConfirmPaymentStarted(paymentRef: ActorRef) extends Command
+
+  case object ConfirmPaymentReceived extends Command
 
   sealed trait Ack
+
   case object Done extends Ack //trivial ACK
 }
 

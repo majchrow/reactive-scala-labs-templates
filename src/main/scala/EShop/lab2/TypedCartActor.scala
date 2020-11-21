@@ -28,6 +28,7 @@ object TypedCartActor {
 
   case class GetItems(sender: ActorRef[Cart]) extends Command
 
+
   sealed trait Event
 
   case class CheckoutStarted(checkoutRef: ActorRef[TypedCheckout.Command]) extends Event
@@ -42,13 +43,13 @@ object TypedCartActor {
 
   case object CheckoutClosed extends Event
 
-  case object CheckoutCancelled
+  case object CheckoutCancelled extends Event
 
-    extends Event
 
   sealed abstract class State(val timerOpt: Option[Cancellable]) {
     def cart: Cart
   }
+
 
   case object Empty extends State(None) {
     def cart: Cart = Cart.empty
@@ -57,6 +58,7 @@ object TypedCartActor {
   case class NonEmpty(cart: Cart, timer: Cancellable) extends State(Some(timer))
 
   case class InCheckout(cart: Cart) extends State(None)
+
 
 }
 

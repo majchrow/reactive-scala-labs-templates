@@ -62,9 +62,10 @@ object TypedCheckout {
 
   case class ProcessingPayment(timer: Cancellable) extends State(timer.some)
 
+
 }
 
-class   TypedCheckout(
+class TypedCheckout(
                      cartActor: ActorRef[TypedCartActor.Command]
                    ) {
 

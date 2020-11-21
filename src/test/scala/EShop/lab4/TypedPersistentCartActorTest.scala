@@ -17,6 +17,7 @@ class TypedPersistentCartActorTest
     with BeforeAndAfterAll
     with BeforeAndAfterEach {
 
+
   override def afterAll: Unit = testKit.shutdownTestKit()
 
   import EShop.lab2.TypedCartActor._
@@ -96,6 +97,7 @@ class TypedPersistentCartActorTest
     val resultCancelCheckout =
       eventSourcedTestKit.runCommand(ConfirmCheckoutCancelled)
 
+
     resultCancelCheckout.event shouldBe CheckoutCancelled
     resultCancelCheckout.state.isInstanceOf[NonEmpty] shouldBe true
   }
@@ -114,6 +116,7 @@ class TypedPersistentCartActorTest
 
     val resultCloseCheckout =
       eventSourcedTestKit.runCommand(ConfirmCheckoutClosed)
+
 
     resultCloseCheckout.event shouldBe CheckoutClosed
     resultCloseCheckout.state shouldBe Empty
@@ -206,4 +209,5 @@ class TypedPersistentCartActorTest
     resultAdd2.hasNoEvents shouldBe true
     resultAdd2.state shouldBe Empty
   }
+
 }

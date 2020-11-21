@@ -18,6 +18,7 @@ class TypedPersistentCheckoutTest
     with BeforeAndAfterAll
     with BeforeAndAfterEach {
 
+
   override def afterAll: Unit = testKit.shutdownTestKit()
 
   import EShop.lab2.TypedCheckout._
@@ -42,6 +43,7 @@ class TypedPersistentCheckoutTest
 
   val deliveryMethod = "post"
   val paymentMethod = "paypal"
+
 
   def generatePersistenceId: PersistenceId = PersistenceId.ofUniqueId(Random.alphanumeric.take(256).mkString)
 
@@ -185,6 +187,7 @@ class TypedPersistentCheckoutTest
 
     val resultReceivePayment = eventSourcedTestKit.runCommand(ConfirmPaymentReceived)
 
+
     resultReceivePayment.hasNoEvents shouldBe true
     resultReceivePayment.state shouldBe Cancelled
   }
@@ -207,6 +210,7 @@ class TypedPersistentCheckoutTest
 
     val resultReceivePayment = eventSourcedTestKit.runCommand(ConfirmPaymentReceived)
 
+
     resultReceivePayment.event shouldBe CheckOutClosed
     resultReceivePayment.state shouldBe Closed
   }
@@ -228,6 +232,7 @@ class TypedPersistentCheckoutTest
     resultSelectPayment.state.isInstanceOf[ProcessingPayment] shouldBe true
 
     val resultReceivePayment = eventSourcedTestKit.runCommand(ConfirmPaymentReceived)
+
 
     resultReceivePayment.event shouldBe CheckOutClosed
     resultReceivePayment.state shouldBe Closed
@@ -256,4 +261,5 @@ class TypedPersistentCheckoutTest
     resultSelectDelivery.hasNoEvents shouldBe true
     resultSelectDelivery.state shouldBe Cancelled
   }
+
 }
